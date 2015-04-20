@@ -8,21 +8,6 @@ import (
 	"testing"
 )
 
-// messageFromMsgAndArgs will return the message
-// if it exists.
-func messageFromMsgAndArgs(msgAndArgs ...interface{}) string {
-	if len(msgAndArgs) == 0 || msgAndArgs == nil {
-		return ""
-	}
-	if len(msgAndArgs) == 1 {
-		return msgAndArgs[0].(string)
-	}
-	if len(msgAndArgs) > 1 {
-		return fmt.Sprintf(msgAndArgs[0].(string), msgAndArgs[1:]...)
-	}
-	return ""
-}
-
 // equal will test if the expected and actual value is the same match.
 func equal(expected, actual interface{}) bool {
 	if expected == nil || actual == nil {
@@ -41,11 +26,10 @@ func equal(expected, actual interface{}) bool {
 }
 
 // Fail will print a failing message to the terminal.
-func Fail(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) {
-	message := messageFromMsgAndArgs(msgAndArgs...)
-	_, file, line, _ := runtime.Caller(1)
-	fmt.Printf("\033[31m✖\033[39m %s (%s:%d) \033[31m%v == %v\033[39m\n",
-		message,
+func Fail(t *testing.T, expected, actual interface{}) {
+	_, file, line, _ := runtime.Caller(2)
+
+	t.Errorf("\033[31m✖\033[39m %s:%d: \033[31m%v == %v\033[39m\n",
 		filepath.Base(file),
 		line,
 		expected,
@@ -53,34 +37,35 @@ func Fail(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{})
 }
 
 // Equal will test if the expected and actual value is the same match.
-func Equal(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+func Equal(t *testing.T, expected, actual interface{}) {
 	if !equal(expected, actual) {
-		Fail(t, expected, actual, msgAndArgs...)
+		Fail(t, expected, actual)
 	}
+}
 
-	return true
+// NotEqual will test if the expected and actual value is not a match.
+func NotEqual(t *testing.T, expected, actual interface{}) {
+	if equal(expected, actual) {
+		Fail(t, expected, actual)
+	}
 }
 
 // True will test the actual value and see if it's true or not.
-func True(t *testing.T, actual bool, msgAndArgs ...interface{}) bool {
+func True(t *testing.T, actual bool) {
 	if actual != true {
-		Fail(t, true, actual, msgAndArgs...)
+		Fail(t, true, actual)
 	}
-
-	return true
 }
 
 // False will test the actual value and see if it's false or not.
-func False(t *testing.T, actual bool, msgAndArgs ...interface{}) bool {
+func False(t *testing.T, actual bool) {
 	if actual != false {
-		Fail(t, false, actual, msgAndArgs...)
+		Fail(t, false, actual)
 	}
-
-	return true
 }
 
 // Nil will test the actual value and see if it's nil or not.
-func Nil(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
+func Nil(t *testing.T, actual interface{}, args ...interface{}) {
 	success := true
 
 	if actual == nil {
@@ -94,14 +79,12 @@ func Nil(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
 	}
 
 	if !success {
-		Fail(t, nil, actual, msgAndArgs...)
+		Fail(t, nil, actual)
 	}
-
-	return success
 }
 
 // NotNil test check if the actual value is not nil.
-func NotNil(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
+func NotNil(t *testing.T, actual interface{}) {
 	success := true
 
 	if actual == nil {
@@ -115,8 +98,6 @@ func NotNil(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
 	}
 
 	if !success {
-		Fail(t, nil, actual, msgAndArgs...)
+		Fail(t, nil, actual)
 	}
-
-	return success
 }

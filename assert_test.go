@@ -3,18 +3,26 @@ package assert
 import "testing"
 
 func TestEqual(t *testing.T) {
-	//Equal(t, "foo", "foo", "msg!")
-	Equal(t, "foo", "boo", "Foo will not match boo")
+	Equal(t, "foo", "foo")
+
+	type Hello struct {
+		Name string
+	}
+
+	p := Hello{"Fredrik"}
+	p2 := Hello{"Kalle"}
+
+	NotEqual(t, p, p2)
 }
 
 func TestTrue(t *testing.T) {
-	True(t, true, "true will match true")
+	True(t, true)
 }
 
 func TestFalse(t *testing.T) {
-	False(t, true, "false will match false")
+	False(t, false)
 }
 
 func TestNotNil(t *testing.T) {
-	NotNil(t, nil, "true is not nil")
+	NotNil(t, true)
 }
