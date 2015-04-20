@@ -17,7 +17,7 @@ package mypack
 
 import (
   "testing"
-	"github.com/frozzare/go-assert"
+  "github.com/frozzare/go-assert"
 )
 
 func TestName(t *testing.T) {
