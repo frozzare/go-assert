@@ -78,7 +78,7 @@ func Nil(t *testing.T, actual interface{}, args ...interface{}) {
 		success = false
 	}
 
-	if !success {
+	if success {
 		Fail(t, nil, actual)
 	}
 }

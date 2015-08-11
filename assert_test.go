@@ -2,12 +2,12 @@ package assert
 
 import "testing"
 
+type Hello struct {
+	Name string
+}
+
 func TestEqual(t *testing.T) {
 	Equal(t, "foo", "foo")
-
-	type Hello struct {
-		Name string
-	}
 
 	p := Hello{"Fredrik"}
 	p2 := Hello{"Kalle"}
@@ -23,6 +23,15 @@ func TestFalse(t *testing.T) {
 	False(t, false)
 }
 
+func TestNil(t *testing.T) {
+	Nil(t, nil)
+	var i interface{}
+	Nil(t, i)
+}
+
 func TestNotNil(t *testing.T) {
 	NotNil(t, true)
+
+	p := Hello{"Fredrik"}
+	NotNil(t, p)
 }
