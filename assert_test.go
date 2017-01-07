@@ -2,36 +2,47 @@ package assert
 
 import "testing"
 
-type Hello struct {
-	Name string
+func TestEqual(t *testing.T) {
+	True(t, Equal(t, "foo", "foo", "Foo will match foo"))
 }
 
-func TestEqual(t *testing.T) {
-	Equal(t, "foo", "foo")
-
-	p := Hello{"Fredrik"}
-	p2 := Hello{"Kalle"}
-
-	NotEqual(t, p, p2)
+func TestNotEqual(t *testing.T) {
+	True(t, NotEqual(t, "foo", "boo", "Foo will not match boo"))
 }
 
 func TestTrue(t *testing.T) {
-	True(t, true)
+	True(t, True(t, true, "true will match true"))
 }
 
 func TestFalse(t *testing.T) {
-	False(t, false)
-}
-
-func TestNil(t *testing.T) {
-	Nil(t, nil)
-	var i interface{}
-	Nil(t, i)
+	True(t, False(t, false, "false will match false"))
 }
 
 func TestNotNil(t *testing.T) {
-	NotNil(t, true)
+	True(t, NotNil(t, true, "true is not nil"))
+}
 
-	p := Hello{"Fredrik"}
-	NotNil(t, p)
+func TestEmpty(t *testing.T) {
+	values := []interface{}{
+		nil,
+		"",
+		"",
+		[]string{},
+		0,
+		0.0,
+	}
+
+	for _, v := range values {
+		True(t, Empty(t, v))
+	}
+
+	values = []interface{}{
+		"hello",
+		1,
+		[]string{""},
+	}
+
+	for _, v := range values {
+		True(t, NotEmpty(t, v))
+	}
 }

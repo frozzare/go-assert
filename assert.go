@@ -8,7 +8,22 @@ import (
 	"testing"
 )
 
-// equal will test if the expected and actual value is the same match.
+func messageFromMsgAndArgs(msgAndArgs ...interface{}) string {
+	if len(msgAndArgs) == 0 || msgAndArgs == nil {
+		return ""
+	}
+
+	if len(msgAndArgs) == 1 {
+		return msgAndArgs[0].(string)
+	}
+
+	if len(msgAndArgs) > 1 {
+		return fmt.Sprintf(msgAndArgs[0].(string), msgAndArgs[1:]...)
+	}
+
+	return ""
+}
+
 func equal(expected, actual interface{}) bool {
 	if expected == nil || actual == nil {
 		return expected == actual
@@ -25,79 +40,135 @@ func equal(expected, actual interface{}) bool {
 	return false
 }
 
-// Fail will print a failing message to the terminal.
-func Fail(t *testing.T, expected, actual interface{}) {
-	_, file, line, _ := runtime.Caller(2)
+func isnil(actual interface{}) bool {
+	if actual == nil {
+		return true
+	}
 
-	t.Errorf("\033[31m✖\033[39m %s:%d: \033[31m%v == %v\033[39m\n",
+	value := reflect.ValueOf(actual)
+	kind := value.Kind()
+	if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
+		return true
+	}
+
+	return false
+}
+
+func empty(actual interface{}) bool {
+	if isnil(actual) {
+		return true
+	}
+
+	k := reflect.ValueOf(actual).Kind()
+	if k == reflect.Array || k == reflect.Chan || k == reflect.Map || k == reflect.Slice || k == reflect.String {
+		if reflect.ValueOf(actual).Len() == 0 {
+			return true
+		}
+	}
+
+	if actual == 0 || actual == 0.0 {
+		return true
+	}
+
+	return false
+}
+
+// Fail logs a failed message.
+func Fail(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) {
+	message := messageFromMsgAndArgs(msgAndArgs...)
+	_, file, line, _ := runtime.Caller(1)
+	fmt.Printf("\033[31m✖\033[39m %s (%s:%d) \033[31m%v == %v\033[39m\n",
+		message,
 		filepath.Base(file),
 		line,
 		expected,
 		actual)
 }
 
-// Equal will test if the expected and actual value is the same match.
-func Equal(t *testing.T, expected, actual interface{}) {
-	if !equal(expected, actual) {
-		Fail(t, expected, actual)
-	}
-}
-
-// NotEqual will test if the expected and actual value is not a match.
-func NotEqual(t *testing.T, expected, actual interface{}) {
-	if equal(expected, actual) {
-		Fail(t, expected, actual)
-	}
-}
-
-// True will test the actual value and see if it's true or not.
-func True(t *testing.T, actual bool) {
-	if actual != true {
-		Fail(t, true, actual)
-	}
-}
-
-// False will test the actual value and see if it's false or not.
-func False(t *testing.T, actual bool) {
-	if actual != false {
-		Fail(t, false, actual)
-	}
-}
-
-// Nil will test the actual value and see if it's nil or not.
-func Nil(t *testing.T, actual interface{}, args ...interface{}) {
-	success := true
-
-	if actual == nil {
-		success = false
-	}
-
-	value := reflect.ValueOf(actual)
-	kind := value.Kind()
-	if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
-		success = false
-	}
-
-	if success {
-		Fail(t, nil, actual)
-	}
-}
-
-// NotNil test check if the actual value is not nil.
-func NotNil(t *testing.T, actual interface{}) {
-	success := true
-
-	if actual == nil {
-		success = false
-	} else {
-		value := reflect.ValueOf(actual)
-		kind := value.Kind()
-		if kind >= reflect.Chan && kind <= reflect.Slice && value.IsNil() {
-			success = false
-		}
-	}
+// Equal compare the expected value with the actual value and determine if the values are the same.
+func Equal(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+	success := equal(expected, actual)
 
 	if !success {
-		Fail(t, nil, actual)
+		Fail(t, expected, actual, msgAndArgs...)
 	}
+
+	return success
+}
+
+// NotEqual compare the expected value with the actual value and determine if the values are not the same.
+func NotEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+	success := !equal(expected, actual)
+
+	if !success {
+		Fail(t, expected, actual, msgAndArgs...)
+	}
+
+	return success
+}
+
+// True checks if the given value is true or not.
+func True(t *testing.T, actual bool, msgAndArgs ...interface{}) bool {
+	success := actual == true
+
+	if !success {
+		Fail(t, true, actual, msgAndArgs...)
+	}
+
+	return success
+}
+
+// False checks if the given value is false or not.
+func False(t *testing.T, actual bool, msgAndArgs ...interface{}) bool {
+	success := actual == false
+
+	if !success {
+		Fail(t, false, actual, msgAndArgs...)
+	}
+
+	return success
+}
+
+// NotNil checks if the given value is not nil or not.
+func NotNil(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
+	success := !isnil(actual)
+
+	if !success {
+		Fail(t, nil, actual, msgAndArgs...)
+	}
+
+	return success
+}
+
+// Nil checks if the given value is nil or not.
+func Nil(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
+	success := isnil(actual)
+
+	if !success {
+		Fail(t, nil, actual, msgAndArgs...)
+	}
+
+	return success
+}
+
+// Empty checks if the given value is empty or not.
+func Empty(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
+	if empty(actual) {
+		return true
+	}
+
+	Fail(t, "empty", actual, msgAndArgs...)
+
+	return false
+}
+
+// NotEmpty checks if the given value is not empty or not.
+func NotEmpty(t *testing.T, actual interface{}, msgAndArgs ...interface{}) bool {
+	if !empty(actual) {
+		return true
+	}
+
+	Fail(t, "not empty", actual, msgAndArgs...)
+
+	return false
 }
